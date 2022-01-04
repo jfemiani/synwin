@@ -6,6 +6,7 @@ from glob import glob
 from random import choice, uniform,  gauss
 import os
 import math
+import time
 
 def reload():
     mod = bpy.data.texts['synwin.py'].as_module()
@@ -95,7 +96,10 @@ for loop in wall.data.loops:
         
 # Subdivide the wall
 subd = wall.modifiers.get('Subdivision')
-if subd is None: subd = bpy.ops.object.modifier_add(type='SUBSURF')
+if subd is None: 
+    bpy.ops.object.modifier_add(type='SUBSURF')
+    subd = wall.modifiers.get('Subdivision')
+    
 bpy.ops.object.modifier_move_to_index(modifier="Subdivision", index=0)
 subd.subdivision_type = 'SIMPLE'
 subd.levels=8
@@ -212,90 +216,106 @@ def make_window():
     win.window_shape =choice(shapes) # 'RECTANGLE'
     
     # Glass
-    win.archipack_window[0].enable_glass = True
+    win.enable_glass = True
     
     # Frame Width
-    archipack_window[0].frame_x = gauss(0.06, 0.03) #0.06
+    win.frame_x = gauss(0.06, 0.03) #0.06
     
     # Frame Depth
-    archipack_window[0].frame_y =  gauss(0.06, 0.03) # 0.06
+    win.frame_y =  gauss(0.06, 0.03) # 0.06
     
     
     # Handles (generally inside...)
-    win.archipack_window[0].handle_enable = False
-    archipack_window[0].handle_altitude = 1.4
+    win.handle_enable = False
+    win.handle_altitude = 1.4
 
     # Show an outer window frame (molding)
-    win.archipack_window[0].out_frame = uniform(0, 100) < 80 # True 
+    win.out_frame = uniform(0, 100) < 80 # True 
     
     # Front Width
-    win.archipack_window[0].out_frame_x = 0.04
+    win.out_frame_x = 0.04
 
     # Front Depth
-    win.archipack_window[0].out_frame_y = 0.02
+    win.out_frame_y = 0.02
     
     # Side Depth
-    win.archipack_window[0].out_frame_y2 = 0.02
+    win.out_frame_y2 = 0.02
     
     # ???
-    win.archipack_window[0].out_frame_offset = 0
+    win.out_frame_offset = 0
     
 
     # Outside Tablet (sill)
-    archipack_window[0].out_tablet_enable
+    win.out_tablet_enable
     
     # Width
-    archipack_window[0].out_tablet_x 
+    win.out_tablet_x 
     
     # Depth
-    archipack_window[0].out_tablet_y
+    win.out_tablet_y
     
     # Height
-    archipack_window[0].out_tablet_z
+    win.out_tablet_z
     
     # Inside Tablet (sill)
-    archipack_window[0].in_tablet_enable
+    win.in_tablet_enable
     
     # Width
-    archipack_window[0].in_tablet_x   
+    win.in_tablet_x   
     
     # Depth 
-    archipack_window[0].in_tablet_y
+    win.in_tablet_y
     
     # Height
-    archipack_window[0].in_tablet_z
+    win.in_tablet_z
     
     # Blind 
-    archipack_window[0].blind_enable
+    win.blind_enable = uniform(0, 100) > 50
     
     # Percent Blind Open (0.0 = closed, 100.0 = Open)
-    archipack_window[0].blind_open
+    win.blind_open = uniform(0, 100)
     
     # Depth (Of Folds)
-    archipack_window[0].blind_y = 0.002
+    win.blind_y = 0.002
     
     # Height (of Folds)
-    archipack_window[0].blind_z  = 0.03
+    win.blind_z  = 0.03
     
     # Number of rows of panels
-    archipack_window[0].n_rows
+    win.n_rows
     
     
     #### Per Row ####
     
     # Height of the panel (Row Heights must sum to height)
     #    \-->  that is  win.archipack_window[0].z 
-    archipack_window[0].rows[0].height
+    win.rows[0].height
     
     # Number of Panels on the row
-    archipack_window[0].rows[0].cols
+    win.rows[0].cols
     
     # Width of the column/panel (up to 32 of them)
     #    \--> Must sum to .x  (Width) of the whole window
-    archipack_window[0].rows[0].width[0]
+    win.rows[0].width[0]
     
     # Whether the panel is fixed (cannot be opened)
-    archipack_window[0].rows[0].fixed[0]
+    win.rows[0].fixed[0]
+    
+    return win
+    
+
+basename = time.strftime("%Y%m%d-%H%M%S")
+
+def render_frame():
+    path = basename + '.jpg'
+    bpy.context.scene.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+
+
+def random_window():
+    make_window()
+    render_frame()
+    bpy.ops.wm.save_as_mainfile(filepath=basename + '.blend')
     
     
-    
+random_window()
