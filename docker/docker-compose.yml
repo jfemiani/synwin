@@ -1,0 +1,26 @@
+version: '3'
+services:
+  synwin:
+    image: jfemiani/synwin:latest
+    container_name: synwin_machine
+    build: 
+        context: ${PRJ_ROOT}
+        dockerfile: docker/Dockerfile
+    user: $DC_UID:$DC_GID
+    stdin_open: true
+    tty: true
+    hostname: synwin_machine
+    volumes:
+    - ${PRJ_ROOT}:/workspace
+    - /home/${USER}:/home/${USER}
+    - /etc/group:/etc/group:ro
+    - /etc/passwd:/etc/passwd:ro
+    - /etc/shadow:/etc/shadow:ro
+    - /etc/sudoers.d:/etc/sodoers.d:ro
+    environment:
+    - TERM=xterm-256color
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [gpu]
