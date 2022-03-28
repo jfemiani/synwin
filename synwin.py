@@ -89,6 +89,7 @@ mapping_node.inputs['Rotation'].default_value[2] = hdr_rotation_z
 # UV-Map the wall
 
 wall.select_set(True)
+bpy.context.view_layer.objects.active = wall
 bpy.ops.uv.lightmap_pack()
 # Randomize the mapping a bit
 for loop in wall.data.loops:
