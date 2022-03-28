@@ -1,1 +1,1 @@
-$BLENDER_PATH -b synwin.blend -P synwin.py 
+blender -b synwin.blend -P synwin.py 

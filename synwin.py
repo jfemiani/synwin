@@ -7,6 +7,7 @@ from random import choice, uniform,  gauss
 import os
 import math
 import time
+import os
 
 def reload():
     mod = bpy.data.texts['synwin.py'].as_module()
@@ -95,12 +96,13 @@ for loop in wall.data.loops:
     pt.uv = (pt.uv + wall_uv_loc)*wall_uv_scale
         
 # Subdivide the wall
+wall.select_set(True)
+bpy.context.view_layer.objects.active = wall
 subd = wall.modifiers.get('Subdivision')
 if subd is None: 
-    bpy.ops.object.modifier_add(type='SUBSURF')
-    subd = wall.modifiers.get('Subdivision')
+    subd = wall.modifiers.new(name='Subdivision', type='SUBSURF')
     
-bpy.ops.object.modifier_move_to_index(modifier="Subdivision", index=0)
+bpy.ops.object.modifier_move_to_index(modifier=subd.name, index=0)
 subd.subdivision_type = 'SIMPLE'
 subd.levels=8
 subd.render_levels=8
@@ -303,19 +305,34 @@ def make_window():
     
     return win
     
+    
+    
+materials = bpy.data.materials
+for i, m in enumerate(materials, start=1):
+    m.pass_index = i
+    
 
+outdir = 'data/generated'
 basename = time.strftime("%Y%m%d-%H%M%S")
 
+os.makedirs(outdir, exist_ok=True)
+
+
+bpy.data.scenes["Scene"].node_tree.nodes["depth-output"].base_path = os.path.join(outdir, basename + '-depth')
+bpy.data.scenes["Scene"].node_tree.nodes["normals-output"].base_path= os.path.join(outdir, basename + '-normals')
+bpy.data.scenes["Scene"].node_tree.nodes["uv-output"].base_path= os.path.join(outdir, basename + '-uv')
+bpy.data.scenes["Scene"].node_tree.nodes["material-index-output"].base_path= os.path.join(outdir, basename + '-matindex')
+
 def render_frame():
-    path = basename + '.jpg'
+    path = os.path.join(outdir, basename + '.jpg')
     bpy.context.scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
 
 
 def random_window():
     make_window()
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(outdir, basename + '.blend'))
     render_frame()
-    bpy.ops.wm.save_as_mainfile(filepath=basename + '.blend')
     
     
 random_window()
